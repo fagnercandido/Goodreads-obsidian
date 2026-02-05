@@ -1,0 +1,11 @@
+{
+	"id": "goodreads-obsidian",
+	"name": "GoodReads Integration",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Integrate GoodReads with Obsidian. Import books from RSS, create a visual gallery, and generate notes.",
+	"author": "Fagner Candido",
+	"authorUrl": "https://github.com/fagnercandido",
+	"fundingUrl": "",
+	"isDesktopOnly": false
+}

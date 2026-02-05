@@ -1,0 +1,227 @@
+/* Main container for the custom view */
+.goodreads-gallery-view-container {
+    padding: 24px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.goodreads-gallery-header {
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    padding-bottom: 16px;
+}
+
+.goodreads-gallery-header h1 {
+    margin: 0 0 8px 0;
+    font-size: 2em;
+}
+
+.goodreads-count-text {
+    color: var(--text-muted);
+    font-size: 0.9em;
+    margin: 0;
+}
+
+/* Main grid container */
+.goodreads-books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 24px;
+    padding-bottom: 40px;
+}
+
+/* Individual book card */
+.goodreads-book-card {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 8px;
+    overflow: visible;
+}
+
+.goodreads-book-card:hover {
+    transform: translateY(-8px);
+    z-index: 10;
+}
+
+/* Cover wrapper */
+.book-cover-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2/3;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.3s ease;
+}
+
+.goodreads-book-card:hover .book-cover-wrapper {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+}
+
+.theme-dark .book-cover-wrapper {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.theme-dark .goodreads-book-card:hover .book-cover-wrapper {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6);
+}
+
+/* Book cover image */
+.book-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.goodreads-book-card:hover .book-cover {
+    transform: scale(1.05);
+}
+
+/* Overlay that appears on hover */
+.book-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom,
+            rgba(0, 0, 0, 0) 0%,
+            rgba(0, 0, 0, 0.7) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: flex-end;
+    padding: 12px;
+}
+
+.goodreads-book-card:hover .book-overlay {
+    opacity: 1;
+}
+
+/* Overlay content */
+.book-overlay-content {
+    width: 100%;
+    color: white;
+    text-align: center;
+}
+
+.book-rating {
+    font-size: 0.9em;
+    margin-bottom: 4px;
+    line-height: 1;
+}
+
+.book-status {
+    font-size: 0.75em;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+/* Visual indicator for books with notes */
+.goodreads-book-card.has-note .book-cover-wrapper::after {
+    content: "✓";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    z-index: 5;
+}
+
+/* Book info below cover */
+.book-info {
+    padding: 12px 4px 0 4px;
+}
+
+.book-title {
+    font-weight: 600;
+    font-size: 0.9em;
+    line-height: 1.3;
+    margin-bottom: 4px;
+    color: var(--text-normal);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.book-author {
+    font-size: 0.8em;
+    color: var(--text-muted);
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .goodreads-books-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 16px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .goodreads-books-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 24px;
+    }
+}
+
+/* Smooth fade-in animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.goodreads-book-card {
+    animation: fadeInUp 0.4s ease-out backwards;
+}
+
+/* Stagger animation for cards */
+.goodreads-book-card:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.goodreads-book-card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.goodreads-book-card:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.goodreads-book-card:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.goodreads-book-card:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.goodreads-book-card:nth-child(6) {
+    animation-delay: 0.3s;
+}
