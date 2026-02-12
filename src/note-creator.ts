@@ -1,5 +1,5 @@
 import { App, Notice, normalizePath } from "obsidian";
-import { Book } from "./rss-parser-old";
+import { Book } from "./rss-parser";
 
 export class NoteCreator {
     constructor(private app: App) { }

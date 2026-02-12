@@ -1,4 +1,4 @@
-import { Book } from "./rss-parser-old";
+import { Book } from "./rss-parser";
 
 export interface DBEntry extends Book {
     notePath?: string;

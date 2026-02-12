@@ -1,7 +1,7 @@
 import { Plugin, Notice, TFile, WorkspaceLeaf } from 'obsidian';
 import { GoodReadsPluginSettings, DEFAULT_SETTINGS, GoodReadsSettingTab } from "./settings";
 import { BookDatabase, DBEntry } from './database';
-import { GoodReadsParser } from './rss-parser-old';
+import { GoodReadsParser } from './rss-parser';
 import { SyncManager } from './sync-manager';
 import { NoteCreator } from './note-creator';
 import { GalleryView, VIEW_TYPE_GOODREADS_GALLERY } from './gallery-view';

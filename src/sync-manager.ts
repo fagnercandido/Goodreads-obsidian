@@ -1,5 +1,5 @@
 import { BookDatabase } from "./database";
-import { GoodReadsParser } from "./rss-parser-old";
+import { GoodReadsParser } from "./rss-parser";
 import { Notice } from "obsidian";
 
 export class SyncManager {
