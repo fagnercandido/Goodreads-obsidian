@@ -1,8 +1,7 @@
 # GoodReads Obsidian Integration
-
+# This plugin was generated with Antigravity.
 Integrate your GoodReads "My Books" shelf directly into Obsidian.
 
-![Gallery View](https://via.placeholder.com/800x400?text=GoodReads+Gallery+Preview)
 
 ## Features
 - **RSS Import**: Automatically sync books from your GoodReads RSS feed.
