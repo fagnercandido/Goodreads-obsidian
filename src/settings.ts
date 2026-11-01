@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting, Notice, ButtonComponent } from 'obsidian';
+import { App, PluginSettingTab, Setting, Notice, ButtonComponent, normalizePath, TFile } from 'obsidian';
 import MyPlugin from './main';
 import { t } from './i18n';
 
@@ -8,8 +8,8 @@ export interface GoodReadsPluginSettings {
 	galleryNoteName: string; // This was for the note-based gallery, but we can reuse it for the Title if not set
 	galleryTitle: string;
 	viewDisplayName: string;
-	syncOnStart: boolean;
-	syncFrequency: 'manual' | 'daily' | 'weekly';
+	scanInboxPath: string; // File the iOS Shortcut appends scanned barcodes to
+	googleBooksApiKey: string; // Optional: reliable ISBN lookups (esp. PT/EU books)
 }
 
 export const DEFAULT_SETTINGS: GoodReadsPluginSettings = {
@@ -18,8 +18,8 @@ export const DEFAULT_SETTINGS: GoodReadsPluginSettings = {
 	galleryNoteName: '', // Legacy
 	galleryTitle: '', // Empty means use default from translation
 	viewDisplayName: '', // Empty means use default from translation
-	syncOnStart: false,
-	syncFrequency: 'manual'
+	scanInboxPath: 'goodreads-scan-inbox.md',
+	googleBooksApiKey: ''
 }
 
 export class GoodReadsSettingTab extends PluginSettingTab {
@@ -45,7 +45,7 @@ export class GoodReadsSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.rssUrl)
 				.onChange(async (value) => {
 					this.plugin.settings.rssUrl = value.trim();
-					await this.plugin.saveSettings();
+					this.plugin.requestSave();
 				}));
 
 		new Setting(containerEl)
@@ -56,7 +56,7 @@ export class GoodReadsSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.noteFolder)
 				.onChange(async (value) => {
 					this.plugin.settings.noteFolder = value.trim();
-					await this.plugin.saveSettings();
+					this.plugin.requestSave();
 				}));
 
 		new Setting(containerEl)
@@ -67,7 +67,7 @@ export class GoodReadsSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.galleryTitle)
 				.onChange(async (value) => {
 					this.plugin.settings.galleryTitle = value.trim();
-					await this.plugin.saveSettings();
+					this.plugin.requestSave();
 					// Trigger update in views if open
 					this.plugin.app.workspace.requestSaveLayout();
 				}));
@@ -80,34 +80,11 @@ export class GoodReadsSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.viewDisplayName)
 				.onChange(async (value) => {
 					this.plugin.settings.viewDisplayName = value.trim();
-					await this.plugin.saveSettings();
+					this.plugin.requestSave();
 					// Trigger update to refresh tab name
 					this.plugin.app.workspace.requestSaveLayout();
 				}));
 
-		new Setting(containerEl)
-			.setName(t('SETTINGS_SYNC_START_NAME'))
-			.setDesc(t('SETTINGS_SYNC_START_DESC'))
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.syncOnStart)
-				.onChange(async (value) => {
-					this.plugin.settings.syncOnStart = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(containerEl)
-			.setName(t('SETTINGS_SYNC_FREQ_NAME'))
-			.setDesc(t('SETTINGS_SYNC_FREQ_DESC'))
-			.addDropdown(dropdown => dropdown
-				.addOption('manual', 'Manual only')
-				.addOption('daily', 'Daily')
-				.addOption('weekly', 'Weekly')
-				.setValue(this.plugin.settings.syncFrequency)
-				.onChange(async (value) => {
-					this.plugin.settings.syncFrequency = value as 'manual' | 'daily' | 'weekly';
-					await this.plugin.saveSettings();
-				})
-			);
 
 		// Force Sync Button
 		new Setting(containerEl)
@@ -127,8 +104,8 @@ export class GoodReadsSettingTab extends PluginSettingTab {
 
 					try {
 						new Notice(`🔄 ${t('SYNC_STARTING')}`);
-						const count = await this.plugin.syncManager.sync(this.plugin.settings.rssUrl);
-						new Notice(`✅ ${t('SYNC_COMPLETE', { count })}`);
+						const r = await this.plugin.syncManager.sync(this.plugin.settings.rssUrl);
+						new Notice(`✅ ${t('SYNC_COMPLETE', { added: r.added, updated: r.updated })}`);
 					} catch (error: any) {
 						new Notice(`❌ ${t('SYNC_FAILED', { error: error.message })}`);
 					} finally {
@@ -136,5 +113,70 @@ export class GoodReadsSettingTab extends PluginSettingTab {
 						button.setButtonText(t('SETTINGS_SYNC_BUTTON'));
 					}
 				}));
+
+		// --- ISBN lookup ---
+		new Setting(containerEl)
+			.setName(t('SETTINGS_APIKEY_NAME'))
+			.setDesc(t('SETTINGS_APIKEY_DESC'))
+			.addText(text => text
+				.setPlaceholder('AIza...')
+				.setValue(this.plugin.settings.googleBooksApiKey)
+				.onChange(async (value) => {
+					this.plugin.settings.googleBooksApiKey = value.trim();
+					this.plugin.requestSave();
+				}));
+
+		// --- Barcode / scan inbox ---
+		containerEl.createEl('h3', { text: t('SETTINGS_SCAN_HEADER') });
+
+		new Setting(containerEl)
+			.setName(t('SETTINGS_INBOX_NAME'))
+			.setDesc(t('SETTINGS_INBOX_DESC'))
+			.addText(text => text
+				.setPlaceholder('goodreads-scan-inbox.md')
+				.setValue(this.plugin.settings.scanInboxPath)
+				.onChange(async (value) => {
+					this.plugin.settings.scanInboxPath = value.trim();
+					this.plugin.requestSave();
+				}));
+
+		new Setting(containerEl)
+			.setName(t('SETTINGS_INBOX_CREATE_NAME'))
+			.setDesc(t('SETTINGS_INBOX_CREATE_DESC'))
+			.addButton((button: ButtonComponent) => button
+				.setButtonText(t('SETTINGS_INBOX_CREATE_BUTTON'))
+				.onClick(async () => {
+					const path = this.plugin.settings.scanInboxPath?.trim();
+					if (!path) {
+						new Notice(`⚠️ ${t('SETTINGS_INBOX_NEED_PATH')}`);
+						return;
+					}
+					const normalized = normalizePath(path);
+					const existing = this.plugin.app.vault.getAbstractFileByPath(normalized);
+					if (existing instanceof TFile) {
+						new Notice(t('SETTINGS_INBOX_EXISTS'));
+						return;
+					}
+					try {
+						await this.plugin.app.vault.create(normalized, '');
+						new Notice(t('SETTINGS_INBOX_CREATED', { path: normalized }));
+					} catch (e: any) {
+						new Notice(`❌ ${e.message}`);
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName(t('SETTINGS_INBOX_PROCESS_NAME'))
+			.setDesc(t('SETTINGS_INBOX_PROCESS_DESC'))
+			.addButton((button: ButtonComponent) => button
+				.setButtonText(t('SETTINGS_INBOX_PROCESS_BUTTON'))
+				.onClick(async () => {
+					await this.plugin.importService.processInbox(true);
+				}));
+
+		const help = containerEl.createEl('div', { cls: 'goodreads-settings-help' });
+		help.createEl('p', { text: t('SETTINGS_SHORTCUT_HELP') });
+		const steps = help.createEl('ol');
+		t('SETTINGS_SHORTCUT_STEPS').split('|').forEach(step => steps.createEl('li', { text: step }));
 	}
 }

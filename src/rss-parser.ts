@@ -1,5 +1,17 @@
 import { requestUrl } from 'obsidian';
 
+/** Reading progress for a book. */
+export type BookStatus = 'read' | 'reading' | 'to-read';
+
+/** Where a book came from. */
+export type BookSource = 'goodreads' | 'manual';
+
+/**
+ * How the user has the book: a physical copy they own, a digital copy they own,
+ * a library loan, or 'none' (they don't have it — e.g. a to-read wishlist item).
+ */
+export type BookFormat = 'physical' | 'digital' | 'library' | 'none';
+
 export interface Book {
     id: string;
     title: string;
@@ -10,6 +22,15 @@ export interface Book {
     isbn?: string;
     link: string;
     description?: string;
+    // --- Personal library fields ---
+    source: BookSource;
+    status: BookStatus;
+    format: BookFormat;      // physical / digital copy the user owns, or none
+    dateAdded?: string;      // ISO date the book entered the library
+    pageCount?: number;
+    publishedYear?: string;
+    categories?: string[];   // genres
+    publisher?: string;
 }
 
 export class GoodReadsParser {
@@ -32,6 +53,13 @@ export class GoodReadsParser {
         return textContent;
     }
 
+    /**
+     * Fetches the GoodReads RSS feed.
+     * This method is ONLY called when user explicitly triggers sync via:
+     * - Command palette: "Sync Books"
+     * - Settings page: "Sync Now" button
+     * No automatic/background syncing occurs.
+     */
     async fetchFeed(url: string): Promise<Book[]> {
         try {
             const response = await requestUrl({ url });
@@ -62,9 +90,27 @@ export class GoodReadsParser {
                 const bookImageUrl = this.getTextContent(item, 'book_image_url');
                 const userRating = this.getTextContent(item, 'user_rating');
                 const userReadAt = this.getTextContent(item, 'user_read_at');
-                const pubDate = this.getTextContent(item, 'pubDate');
                 const isbn = this.getTextContent(item, 'isbn');
                 const bookDescription = this.getTextContent(item, 'book_description');
+                const numPages = this.getTextContent(item, 'num_pages');
+                const bookPublished = this.getTextContent(item, 'book_published');
+                const userDateAdded = this.getTextContent(item, 'user_date_added');
+                const userShelves = this.getTextContent(item, 'user_shelves');
+
+                // A finish date (user_read_at) is the reliable "read" signal —
+                // Goodreads RSS has no start date. Fall back to the shelf name.
+                const shelfList = userShelves.split(',').map(s => s.trim().toLowerCase());
+                let status: BookStatus;
+                if (shelfList.includes('currently-reading')) {
+                    // Active shelf wins over a stale finish date (re-reads keep it).
+                    status = 'reading';
+                } else if (userReadAt || shelfList.includes('read')) {
+                    status = 'read';
+                } else {
+                    status = 'to-read';
+                }
+
+                const pageCount = parseInt(numPages, 10);
 
                 books.push({
                     id: guid || link || bookId,
@@ -72,10 +118,18 @@ export class GoodReadsParser {
                     author: authorName || 'Unknown Author',
                     imageUrl: bookLargeImageUrl || bookImageUrl || '',
                     userRating: userRating || '0',
-                    readAt: userReadAt || pubDate || '',
+                    // Only a real "date read" belongs here; pubDate is the feed
+                    // item date, not when the user finished the book.
+                    readAt: userReadAt || '',
                     isbn: isbn || undefined,
                     link: link,
-                    description: bookDescription || undefined
+                    description: bookDescription || undefined,
+                    source: 'goodreads',
+                    status: status,
+                    format: 'none',
+                    dateAdded: userDateAdded || undefined,
+                    pageCount: Number.isFinite(pageCount) && pageCount > 0 ? pageCount : undefined,
+                    publishedYear: bookPublished || undefined
                 });
             });
 

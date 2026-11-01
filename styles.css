@@ -80,6 +80,17 @@
     transform: scale(1.05);
 }
 
+.book-cover-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--background-secondary);
+    color: var(--text-muted);
+    font-size: 0.8em;
+    text-align: center;
+    padding: 8px;
+}
+
 /* Overlay that appears on hover */
 .book-overlay {
     position: absolute;
@@ -124,7 +135,7 @@
 .goodreads-book-card.has-note .book-cover-wrapper::after {
     content: "✓";
     position: absolute;
-    top: 8px;
+    bottom: 8px;
     right: 8px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -224,4 +235,487 @@
 
 .goodreads-book-card:nth-child(6) {
     animation-delay: 0.3s;
+}
+
+/* ==========================================================================
+   Personal library additions
+   ========================================================================== */
+
+/* Curated, editorial palette — warm & earthy, deliberately NOT the
+   violet/cyan "dashboard" look. Light values first; brighter for dark mode. */
+.goodreads-gallery-view-container {
+    --gr-physical: #bc6c42;   /* terracotta */
+    --gr-digital: #4c6e96;    /* dusty slate blue */
+    --gr-library: #7a8b54;    /* sage / olive */
+    --gr-read: #2e7d74;       /* deep pine-teal */
+    --gr-reading: #c1932f;    /* ochre */
+    --gr-toread: #a9836b;     /* warm clay-taupe */
+    --gr-rating: #c1932f;     /* ochre (stars) */
+    --gr-series: #b06a45;     /* generic single-series bars */
+}
+
+.theme-dark .goodreads-gallery-view-container {
+    --gr-physical: #d59066;
+    --gr-digital: #7f9fc6;
+    --gr-library: #a3b47a;
+    --gr-read: #52ada1;
+    --gr-reading: #e2bb52;
+    --gr-toread: #c6a58c;
+    --gr-rating: #e2bb52;
+    --gr-series: #cf8258;
+}
+
+/* Header row + action buttons */
+.goodreads-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.goodreads-header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.goodreads-btn {
+    background: var(--interactive-normal);
+    color: var(--text-normal);
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 0.85em;
+}
+
+.goodreads-btn:hover {
+    background: var(--interactive-hover);
+}
+
+.goodreads-btn-cta,
+.goodreads-btn.is-active {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.goodreads-btn-cta:hover {
+    background: var(--interactive-accent-hover);
+}
+
+/* Batch action bar */
+.goodreads-bulk-bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.goodreads-bulk-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.goodreads-bulk-count {
+    font-weight: 700;
+    margin-right: 4px;
+}
+
+.goodreads-bulk-label {
+    color: var(--text-muted);
+    font-size: 0.85em;
+    margin-right: 2px;
+}
+
+.goodreads-btn-danger {
+    background: var(--background-modifier-error);
+    color: var(--text-on-accent);
+}
+
+.goodreads-btn-danger.is-armed {
+    background: var(--text-error);
+    color: #fff;
+    font-weight: 700;
+}
+
+/* Selectable cards */
+.goodreads-book-card.selectable {
+    cursor: pointer;
+}
+
+.goodreads-book-card.is-selected .book-cover-wrapper {
+    outline: 3px solid var(--interactive-accent);
+    outline-offset: 2px;
+}
+
+.book-select-check {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 6;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.45);
+    color: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+}
+
+.goodreads-book-card.is-selected .book-select-check {
+    background: var(--interactive-accent);
+    color: #fff;
+    border-color: var(--interactive-accent);
+}
+
+/* Filter bar */
+.goodreads-filter-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 12px 0 4px;
+}
+
+.goodreads-filter-btn {
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 16px;
+    padding: 4px 12px;
+    cursor: pointer;
+    font-size: 0.8em;
+    color: var(--text-muted);
+}
+
+.goodreads-filter-btn:hover {
+    color: var(--text-normal);
+}
+
+.goodreads-filter-btn.is-active {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border-color: var(--interactive-accent);
+}
+
+/* Card badges (status + owned) */
+.book-badges {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+    z-index: 4;
+}
+
+.book-status-badge {
+    font-size: 0.62em;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #241a0f;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.25);
+    background: var(--gr-series);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.book-status-badge.status-read {
+    background: var(--gr-read);
+}
+
+.book-status-badge.status-reading {
+    background: var(--gr-reading);
+}
+
+.book-status-badge.status-to-read {
+    background: var(--gr-toread);
+}
+
+.book-owned-badge {
+    font-size: 0.75em;
+    line-height: 1;
+    padding: 2px 5px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.55);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.book-format-badge {
+    font-size: 0.6em;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #241a0f;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.25);
+    background: var(--gr-series);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.book-format-badge.format-physical {
+    background: var(--gr-physical);
+}
+
+.book-format-badge.format-digital {
+    background: var(--gr-digital);
+}
+
+.book-format-badge.format-library {
+    background: var(--gr-library);
+}
+
+/* The two dark-fill badges (read=teal, digital=slate) keep WHITE text in light
+   mode; in dark mode those fills brighten, so flip back to dark ink. The other
+   badges (lighter fills) use dark ink in both themes. */
+.book-status-badge.status-read,
+.book-format-badge.format-digital {
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.theme-dark .book-status-badge.status-read,
+.theme-dark .book-format-badge.format-digital {
+    color: #241a0f;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+/* Card menu button */
+.book-menu-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 6;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.goodreads-book-card:hover .book-menu-btn {
+    opacity: 1;
+}
+
+/* Add-book modal */
+.goodreads-add-modal .goodreads-add-preview {
+    text-align: center;
+    margin: 12px 0;
+}
+
+.goodreads-add-cover {
+    max-height: 180px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.goodreads-add-section {
+    font-weight: 600;
+    color: var(--text-muted);
+    margin: 16px 0 4px;
+}
+
+/* Barcode scan modal */
+.goodreads-scan-modal {
+    text-align: center;
+}
+
+.goodreads-scan-video {
+    width: 100%;
+    max-width: 400px;
+    border-radius: 8px;
+    background: #000;
+    margin-top: 8px;
+}
+
+.goodreads-scan-hint {
+    color: var(--text-muted);
+    font-size: 0.9em;
+}
+
+/* Settings help block */
+.goodreads-settings-help {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: var(--background-secondary);
+    border-radius: 8px;
+    font-size: 0.9em;
+}
+
+.goodreads-settings-help ol {
+    margin: 8px 0 0;
+    padding-left: 20px;
+}
+
+.goodreads-settings-help li {
+    margin-bottom: 6px;
+}
+
+/* ==========================================================================
+   Stats
+   ========================================================================== */
+
+.goodreads-stat-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.goodreads-stat-tile {
+    background: var(--background-secondary);
+    border-radius: 8px;
+    padding: 16px 12px;
+    text-align: center;
+}
+
+.goodreads-stat-tile-value {
+    font-size: 1.8em;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text-normal);
+}
+
+.goodreads-stat-tile-label {
+    font-size: 0.78em;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+
+.goodreads-stat-section {
+    margin-bottom: 28px;
+}
+
+.goodreads-stat-title {
+    font-size: 1.05em;
+    margin: 0 0 12px;
+}
+
+.goodreads-stat-empty {
+    color: var(--text-muted);
+    font-size: 0.9em;
+    font-style: italic;
+}
+
+/* Horizontal bars */
+.goodreads-hbar-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.goodreads-hbar-row {
+    display: grid;
+    grid-template-columns: 130px 1fr 36px;
+    align-items: center;
+    gap: 8px;
+}
+
+.goodreads-hbar-label {
+    font-size: 0.85em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.goodreads-hbar-track {
+    background: var(--background-modifier-border);
+    border-radius: 4px;
+    height: 14px;
+    overflow: hidden;
+}
+
+.goodreads-hbar-fill {
+    height: 100%;
+    background: var(--gr-series);
+    border-radius: 4px;
+    min-width: 2px;
+}
+
+.goodreads-hbar-value {
+    font-size: 0.8em;
+    text-align: right;
+    color: var(--text-muted);
+}
+
+/* Vertical columns */
+.goodreads-vcol-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 180px;
+    padding-top: 8px;
+}
+
+.goodreads-vcol {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.goodreads-vcol-value {
+    text-align: center;
+    font-size: 0.72em;
+    height: 16px;
+    color: var(--text-muted);
+}
+
+.goodreads-vcol-barwrap {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.goodreads-vcol-bar {
+    width: 70%;
+    min-height: 2px;
+    border-radius: 4px 4px 0 0;
+    background: var(--gr-series);
+    transition: height 0.3s ease;
+}
+
+.goodreads-vcol-label {
+    text-align: center;
+    font-size: 0.68em;
+    color: var(--text-muted);
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .book-menu-btn {
+        opacity: 0.9;
+    }
+
+    .goodreads-hbar-row {
+        grid-template-columns: 90px 1fr 30px;
+    }
 }

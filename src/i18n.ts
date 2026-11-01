@@ -15,7 +15,10 @@ const localeMap: { [k: string]: Partial<typeof en> } = {
     ru
 };
 
-const locale = localeMap[moment.locale()];
+// Obsidian/moment often report region-qualified locales (e.g. "pt-br", "en-gb").
+// Try the exact code first, then fall back to the base language ("pt").
+const activeLocale = moment.locale();
+const locale = localeMap[activeLocale] || localeMap[activeLocale.split('-')[0] as string];
 
 export function t(str: keyof typeof en, variables?: { [key: string]: string | number }): string {
     if (!locale || !locale[str]) {
